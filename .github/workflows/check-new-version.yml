@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'latest-version/wesnoth-devel-latest.txt'
   schedule:
     - cron: "0 6 * * *"
 jobs:
