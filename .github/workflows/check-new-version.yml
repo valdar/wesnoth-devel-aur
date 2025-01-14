@@ -19,11 +19,11 @@ jobs:
           file_path: './feed.json'
       - name: Extract latest relased development version
         run: |
-          latest-version=jq '[.entries[] | .title | select(contains("Wesnoth 1.19."))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'
-          if [[ "$test" == null ]]; then echo "no latest version found"; else echo $latest-version > latest-version/wesnoth-devel-latest.txt; fi
+          latestversion=jq '[.entries[] | .title | select(contains("Wesnoth 1.19."))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'
+          if [[ "$test" == null ]]; then echo "no latest version found"; else echo $latestversion > latest-version/wesnoth-devel-latest.txt; fi
       - name: Check for modified files
         id: git-check
-        run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
+        run: echo modified=$([ -z "`git status --porcelain`" ] && echo "false" || echo "true") >> $GITHUB_OUTPUT
       - name: Commit latest release version
         if: steps.git-check.outputs.modified == 'true'
         run: |
