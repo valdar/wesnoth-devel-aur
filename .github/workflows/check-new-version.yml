@@ -1,0 +1,33 @@
+name: Get latest release version
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 6 * * *"
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+      - name: Fetch ATOM Feed
+        uses: Promptly-Technologies-LLC/rss-fetch-action@ecefea274f0618de6d45353cf9b73355873e89db
+        with:
+          feed_url: 'https://forums.wesnoth.org/app.php/feed/forum/5'
+          file_path: './feed.json'
+      - name: Extract latest relased development version
+        run: |
+          latest-version=jq '[.entries[] | .title | select(contains("Wesnoth 1.19."))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'
+          if [[ "$test" == null ]]; then echo "no latest version found"; else echo $latest-version > latest-version/wesnoth-devel-latest.txt; fi
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
+      - name: Commit latest release version
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'Andrea Tarocchi'
+          git config --global user.email 'valdar@users.noreply.github.com'
+          git commit -am "New release version found and updated."
+          git push
