@@ -1,0 +1,43 @@
+name: Build latest release version
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'latest-version/*'
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: MrSquaare/ssh-setup-action@2d028b70b5e397cf8314c6eaea229a6c3e34977a
+        with:
+            host: aur.archlinux.org
+            private-key: ${{ secrets.SSH_AUR_PRIVATE_KEY }}
+            
+      - name: Clone AUR repository
+        run: |
+          git clone ssh://aur@aur.archlinux.org/wesnoth-devel
+
+      - name: Download and build new version
+        run: |
+          buildversion=`cat latest-version/wesnoth-devel-latest.txt`
+          cd wensoth-devel/
+          ../utils/prepare-build.sh $buildversion && ../utils/docker-build.sh -p
+          
+      - name: Check for modified files
+        id: git-check
+        run: |
+          cd  wensoth-devel/
+          echo modified=$([ -z "`git status --porcelain`" ] && echo "false" || echo "true") >> $GITHUB_OUTPUT
+      - name: Commit latest package changes
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          buildversion=`cat latest-version/wesnoth-devel-latest.txt`
+          cd  wensoth-devel/
+          git config --global user.name 'Andrea Tarocchi'
+          git config --global user.email 'valdar@users.noreply.github.com'
+          git commit -am "Update to version `$buildversion`"
+          git push origin main

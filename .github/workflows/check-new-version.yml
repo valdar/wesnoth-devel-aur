@@ -1,4 +1,4 @@
-name: Get latest release version
+name: Check latest release version
 on:
   push:
     branches:
@@ -21,8 +21,10 @@ jobs:
           file_path: './feed.json'
       - name: Extract latest relased development version
         run: |
-          latestversion=`jq '[.entries[] | .title | select(contains("Wesnoth 1.19."))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'`
-          if [[ "$test" == null ]]; then echo "no latest version found"; else echo $latestversion > latest-version/wesnoth-devel-latest.txt; fi
+          versionsuffix="1.19."
+          regexp="Wesnoth $versionsuffix"
+          latestversion=`jq --arg regexp "$regexp" '[.entries | sort_by(.published) | reverse | .[].title | select(contains($regexp))][0]' input.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'`
+          if [[ "$latestversion" == null ]] || [[ "$latestversion" != $versionsuffix* ]]; then echo "no latest version found or error"; else echo $latestversion > latest-version/wesnoth-devel-latest.txt; fi
       - name: Check for modified files
         id: git-check
         run: echo modified=$([ -z "`git status --porcelain`" ] && echo "false" || echo "true") >> $GITHUB_OUTPUT
