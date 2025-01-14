@@ -19,7 +19,7 @@ jobs:
           file_path: './feed.json'
       - name: Extract latest relased development version
         run: |
-          latestversion=jq '[.entries[] | .title | select(contains("Wesnoth 1.19."))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'
+          latestversion=`jq '[.entries[] | .title | select(contains("Wesnoth 1.19."))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'`
           if [[ "$test" == null ]]; then echo "no latest version found"; else echo $latestversion > latest-version/wesnoth-devel-latest.txt; fi
       - name: Check for modified files
         id: git-check
