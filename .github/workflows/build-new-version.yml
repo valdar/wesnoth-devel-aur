@@ -5,8 +5,10 @@ on:
       - main
     paths:
       - 'latest-version/*'
+  workflow_dispatch:
+    
 jobs:
-  get-version:
+  build-latest-version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,20 +26,20 @@ jobs:
       - name: Download and build new version
         run: |
           buildversion=`cat latest-version/wesnoth-devel-latest.txt`
-          cd wensoth-devel/
+          cd wesnoth-devel/
           ../utils/prepare-build.sh $buildversion && ../utils/docker-build.sh -p
           
       - name: Check for modified files
         id: git-check
         run: |
-          cd  wensoth-devel/
+          cd  wesnoth-devel/
           echo modified=$([ -z "`git status --porcelain`" ] && echo "false" || echo "true") >> $GITHUB_OUTPUT
       - name: Commit latest package changes
         if: steps.git-check.outputs.modified == 'true'
         run: |
           buildversion=`cat latest-version/wesnoth-devel-latest.txt`
-          cd  wensoth-devel/
+          cd  wesnoth-devel/
           git config --global user.name 'Andrea Tarocchi'
           git config --global user.email 'valdar@users.noreply.github.com'
-          git commit -am "Update to version `$buildversion`"
-          git push origin main
+          sudo git commit -am "Update to version $buildversion"
+          git push origin master
