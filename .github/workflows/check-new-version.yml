@@ -7,8 +7,10 @@ on:
       - 'latest-version/wesnoth-devel-latest.txt'
   schedule:
     - cron: "0 6 * * *"
+  workflow_dispatch:
+  
 jobs:
-  get-version:
+  check-latest-version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +25,7 @@ jobs:
         run: |
           versionsuffix="1.19."
           regexp="Wesnoth $versionsuffix"
-          latestversion=`jq --arg regexp "$regexp" '[.entries | sort_by(.published) | reverse | .[].title | select(contains($regexp))][0]' input.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'`
+          latestversion=`jq --arg regexp "$regexp" '[.entries | sort_by(.published) | reverse | .[].title | select(contains($regexp))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'`
           if [[ "$latestversion" == null ]] || [[ "$latestversion" != $versionsuffix* ]]; then echo "no latest version found or error"; else echo $latestversion > latest-version/wesnoth-devel-latest.txt; fi
       - name: Check for modified files
         id: git-check
