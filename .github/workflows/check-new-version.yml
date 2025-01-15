@@ -23,10 +23,11 @@ jobs:
           file_path: './feed.json'
       - name: Extract latest relased development version
         run: |
-          versionsuffix="1.19."
-          regexp="Wesnoth $versionsuffix"
-          latestversion=`jq --arg regexp "$regexp" '[.entries | sort_by(.published) | reverse | .[].title | select(contains($regexp))][0]' feed.json | awk '{sub(/.*Wesnoth /, ""); print}' | awk '{sub(/".*/, ""); print}'`
-          if [[ "$latestversion" == null ]] || [[ "$latestversion" != $versionsuffix* ]]; then echo "no latest version found or error"; else echo $latestversion > latest-version/wesnoth-devel-latest.txt; fi
+          version="1.19."
+          prefix="Wesnoth "
+          # contains is used instead of startswith because titles are prefixed with the forum name
+          latestversion=$(jq --arg prefix "$prefix" --arg version "$version" -r '.entries | sort_by(.published) | reverse | map(select(.title | contains($prefix + $version))) | first? | .title | sub(".*" + $prefix; "")' feed.json)
+          if [[ "$latestversion" == "" ]]; then echo "no latest version found or error"; else printf '%s\n' "$latestversion" > latest-version/wesnoth-devel-latest.txt; fi
       - name: Check for modified files
         id: git-check
         run: echo modified=$([ -z "`git status --porcelain`" ] && echo "false" || echo "true") >> $GITHUB_OUTPUT
