@@ -19,14 +19,14 @@ jobs:
       - name: Fetch ATOM Feed
         uses: Promptly-Technologies-LLC/rss-fetch-action@ecefea274f0618de6d45353cf9b73355873e89db
         with:
-          feed_url: 'https://forums.wesnoth.org/app.php/feed/forum/5'
+          feed_url: 'https://sourceforge.net/p/wesnoth/activity/feed'
           file_path: './feed.json'
       - name: Extract latest relased development version
         run: |
           version="1.19."
-          prefix="Wesnoth "
-          # contains is used instead of startswith because titles are prefixed with the forum name
-          latestversion=$(jq --arg prefix "$prefix" --arg version "$version" -r '.entries | sort_by(.published) | reverse | map(select(.title | contains($prefix + $version))) | first? | .title | sub(".*" + $prefix; "")' feed.json)
+          prefix="wesnoth-"
+          suffix=".tar.bz2"
+          latestversion=$(jq --arg prefix "$prefix" --arg suffix "$suffix" --arg version "$version" -r '.entries | sort_by(.published) | reverse | map(select(.title | contains($prefix + $version) and endswith($suffix) )) | first? | .title | sub(".*" + $prefix; "") | sub($suffix; "")' feed.json)
           if [[ "$latestversion" == "" ]]; then echo "no latest version found or error"; else printf '%s\n' "$latestversion" > latest-version/wesnoth-devel-latest.txt; fi
       - name: Check for modified files
         id: git-check
