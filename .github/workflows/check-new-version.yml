@@ -38,4 +38,4 @@ jobs:
           git config --global user.email 'valdar@users.noreply.github.com'
           git commit -am "New release version found and updated."
           git push
-      - uses: gautamkrishnar/keepalive-workflow@995aec69bb3f2b45b20f4e107907992c8715086d
+      - uses: entepotenz/keep-github-actions-alive-min-dependencies@af047ce81b46ff8bf02a0bbac1eadffc696df6bb
