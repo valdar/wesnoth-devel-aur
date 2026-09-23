@@ -13,11 +13,11 @@ jobs:
   check-latest-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           token: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Fetch ATOM Feed
-        uses: Promptly-Technologies-LLC/rss-fetch-action@ecefea274f0618de6d45353cf9b73355873e89db
+        uses: Promptly-Technologies-LLC/rss-fetch-action@53932b7250d7dd61d72bc874af932eb37db74e5c
         with:
           feed_url: 'https://sourceforge.net/p/wesnoth/activity/feed'
           file_path: './feed.json'
